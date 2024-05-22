@@ -25,10 +25,10 @@ interface PrestamoCalculado extends Prestamo {
   tasaInteres: number;
 }
 
-// const DIAS_ANIO_COMERCIAL = 360;
-// const TASA_IVA = 0.16;
-// const FechaActual = '15-feb-21';
-// const Cliente = '00103228';
+const DIAS_ANIO_COMERCIAL = 360;
+const TASA_IVA = 0.16;
+const FechaActual = '15-feb-21';
+const Cliente = '00103228';
 
 const prestamos: Prestamo[] = [
   {
@@ -125,49 +125,35 @@ const tasasInteres: Rate[] = [
   { plazoMin: 31, plazoMax: 360, tasaInteres: '5.00%' },
 ];
 
+function calcularPlazo(fechaActual: Date, fechaPrestamo: Date): number {
+  const diffTime = Math.abs(fechaActual.getTime() - fechaPrestamo.getTime());
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays;
+}
+
+function calcularInteres(
+  monto: number,
+  plazo: number,
+  tasaInteres: number
+): number {
+  const interes = (monto * plazo * tasaInteres) / DIAS_ANIO_COMERCIAL;
+  return parseFloat(interes.toFixed(2));
+}
+
+function calcularIVA(interes: number): number {
+  const iva = interes * TASA_IVA;
+  return parseFloat(iva.toFixed(2));
+}
+
+function calcularPago(monto: number, interes: number, iva: number): number {
+  const pago = monto + interes + iva;
+  return parseFloat(pago.toFixed(2));
+}
+
 const _layout = () => {
-  const [inputValues, setInputValues] = useState({
-    fechaActual: '',
-    cliente: '',
-    tasaIVA: '',
-    diasAnioComercial: '',
-  });
-  useEffect(() => {
-    setInputValues({
-      fechaActual: '15-feb-21',
-      cliente: '00103228',
-      tasaIVA: '0.16',
-      diasAnioComercial: '360',
-    });
-  }, []);
   const [prestamosCalculados, setPrestamosCalculados] = useState<
     PrestamoCalculado[]
   >([]);
-  function calcularPlazo(fechaActual: Date, fechaPrestamo: Date): number {
-    const diffTime = Math.abs(fechaActual.getTime() - fechaPrestamo.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  }
-
-  function calcularInteres(
-    monto: number,
-    plazo: number,
-    tasaInteres: number
-  ): number {
-    const interes =
-      (monto * plazo * tasaInteres) / parseFloat(inputValues.diasAnioComercial);
-    return parseFloat(interes.toFixed(2));
-  }
-
-  function calcularIVA(interes: number): number {
-    const iva = interes * parseFloat(inputValues.tasaIVA);
-    return parseFloat(iva.toFixed(2));
-  }
-
-  function calcularPago(monto: number, interes: number, iva: number): number {
-    const pago = monto + interes + iva;
-    return parseFloat(pago.toFixed(2));
-  }
 
   useEffect(() => {
     const calculados = prestamos.map((prestamo) => {
@@ -200,6 +186,13 @@ const _layout = () => {
     setPrestamosPorCliente(prestamosPorCliente);
   }, [prestamosCalculados]);
 
+  const [inputValues, setInputValues] = useState({
+    fechaActual: '',
+    cliente: '',
+    tasaIVA: '',
+    diasAnioComercial: '',
+  });
+
   const [searchValues, setSearchValues] = useState({
     fechaActual: '',
     cliente: '',
@@ -216,6 +209,15 @@ const _layout = () => {
       diasAnioComercial: inputValues.diasAnioComercial,
     });
   };
+
+  useEffect(() => {
+    setInputValues({
+      fechaActual: FechaActual,
+      cliente: Cliente,
+      tasaIVA: TASA_IVA.toString(),
+      diasAnioComercial: DIAS_ANIO_COMERCIAL.toString(),
+    });
+  }, []);
 
   return (
     <SafeAreaProvider>
@@ -325,7 +327,7 @@ const _layout = () => {
                             .map((prestamo) => (
                               <>
                                 {prestamo.estado != 'pendiente' ? (
-                                  <View key={prestamo.estado + prestamo.fecha}>
+                                  <View key={prestamo.estado}>
                                     <Text>Plazo: {prestamo.plazo} días</Text>
                                     <Text>
                                       Fecha de inicio: {prestamo.fecha}
@@ -334,14 +336,14 @@ const _layout = () => {
                                       Monto: ${prestamo.monto.toFixed(2)}
                                     </Text>
                                     <Text>
-                                      Interés: {prestamo.interes.toFixed(2)}
+                                      Interés: ${prestamo.interes.toFixed(2)}
                                     </Text>
-                                    <Text>IVA: {prestamo.iva.toFixed(2)}</Text>
+                                    <Text>IVA: ${prestamo.iva.toFixed(2)}</Text>
                                     <Text>
-                                      Pago: {prestamo.pago.toFixed(2)}
+                                      Pago: ${prestamo.pago.toFixed(2)}
                                     </Text>
                                     <Text>Estado: {prestamo.estado}</Text>
-                                    <Text>ID: {prestamo.id}</Text>
+                                    {/* <Text>ID: {prestamo.id}</Text> */}
                                     <Text>Tasa: {prestamo.tasaInteres}</Text>
                                   </View>
                                 ) : null}
