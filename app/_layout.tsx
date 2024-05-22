@@ -344,7 +344,7 @@ const _layout = () => {
                                     </Text>
                                     <Text>Estado: {prestamo.estado}</Text>
                                     {/* <Text>ID: {prestamo.id}</Text> */}
-                                    <Text>Tasa: {prestamo.tasaInteres}</Text>
+                                    <Text>Tasa: {prestamo.tasaInteres}%</Text>
                                   </View>
                                 ) : null}
                               </>
